@@ -3,6 +3,7 @@
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -10,6 +11,7 @@ import Input from '@/components/ui/Input';
 import { Id } from '@/convex/_generated/dataModel';
 
 export default function SegmentsPage() {
+  const router = useRouter();
   const segments = useQuery(api.segments.getAllWithRelations);
   const createSegment = useMutation(api.segments.create);
   const updateSegment = useMutation(api.segments.update);
@@ -132,7 +134,11 @@ export default function SegmentsPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {segments.map((segment) => (
-              <tr key={segment._id} className="hover:bg-gray-50">
+              <tr
+                key={segment._id}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => router.push(`/admin/phases?segment=${segment._id}`)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{segment.icon}</span>
@@ -156,14 +162,14 @@ export default function SegmentsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => openEditModal(segment)}
+                      onClick={(e) => { e.stopPropagation(); openEditModal(segment); }}
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => openDeleteModal(segment)}
+                      onClick={(e) => { e.stopPropagation(); openDeleteModal(segment); }}
                     >
                       <Trash2 className="w-4 h-4 text-red-600" />
                     </Button>

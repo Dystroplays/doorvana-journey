@@ -1,9 +1,11 @@
 'use client';
 
+import React from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import { useState, useMemo } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Plus, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
@@ -11,6 +13,7 @@ import Select from '@/components/ui/Select';
 import { Id } from '@/convex/_generated/dataModel';
 
 export default function PhasesPage() {
+  const searchParams = useSearchParams();
   const segments = useQuery(api.segments.getAllWithRelations);
   const createPhase = useMutation(api.phases.create);
   const updatePhase = useMutation(api.phases.update);
@@ -21,6 +24,12 @@ export default function PhasesPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedPhase, setSelectedPhase] = useState<any>(null);
   const [filterSegmentId, setFilterSegmentId] = useState<string>('');
+  const [expandedPhaseId, setExpandedPhaseId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const segmentParam = searchParams.get('segment');
+    if (segmentParam) setFilterSegmentId(segmentParam);
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     segmentId: '' as Id<'segments'> | '',
@@ -211,60 +220,111 @@ export default function PhasesPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredPhases.map((phase) => (
-              <tr key={phase._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="font-medium text-gray-900">{phase.label}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  <span>
-                    {phase.segment.icon} {phase.segment.label}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  <code className="bg-gray-100 px-2 py-1 rounded">{phase.key}</code>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {phase.duration}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-8 h-8 rounded border border-gray-300"
-                      style={{ backgroundColor: phase.color }}
-                      title={`Background: ${phase.color}`}
-                    />
-                    <div
-                      className="w-8 h-8 rounded border border-gray-300"
-                      style={{ backgroundColor: phase.accent }}
-                      title={`Accent: ${phase.accent}`}
-                    />
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {phase.steps?.length || 0}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {phase.displayOrder}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditModal(phase)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openDeleteModal(phase)}
-                    >
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
+              <React.Fragment key={phase._id}>
+                <tr
+                  key={phase._id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() =>
+                    setExpandedPhaseId((prev) => (prev === phase._id ? null : phase._id))
+                  }
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      {expandedPhaseId === phase._id ? (
+                        <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                      )}
+                      <span className="font-medium text-gray-900">{phase.label}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <span>
+                      {phase.segment.icon} {phase.segment.label}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <code className="bg-gray-100 px-2 py-1 rounded">{phase.key}</code>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {phase.duration}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded border border-gray-300"
+                        style={{ backgroundColor: phase.color }}
+                        title={`Background: ${phase.color}`}
+                      />
+                      <div
+                        className="w-8 h-8 rounded border border-gray-300"
+                        style={{ backgroundColor: phase.accent }}
+                        title={`Accent: ${phase.accent}`}
+                      />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {phase.steps?.length || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {phase.displayOrder}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); openEditModal(phase); }}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); openDeleteModal(phase); }}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+                {expandedPhaseId === phase._id && (
+                  <tr key={`${phase._id}-steps`} className="bg-gray-50">
+                    <td colSpan={8} className="px-8 py-4">
+                      {phase.steps && phase.steps.length > 0 ? (
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              <th className="pb-2 pr-6">Day</th>
+                              <th className="pb-2 pr-6">Action</th>
+                              <th className="pb-2 pr-6">Tool</th>
+                              <th className="pb-2 pr-6">Status</th>
+                              <th className="pb-2">Order</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {phase.steps.map((step: any) => (
+                              <tr key={step._id}>
+                                <td className="py-2 pr-6 text-gray-600">{step.day}</td>
+                                <td className="py-2 pr-6 text-gray-900">{step.action}</td>
+                                <td className="py-2 pr-6 text-gray-600">{step.tool || '—'}</td>
+                                <td className="py-2 pr-6">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${step.isFuture ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                    {step.isFuture ? 'Future' : 'Current'}
+                                  </span>
+                                </td>
+                                <td className="py-2 text-gray-600">{step.displayOrder}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="text-sm text-gray-500">No steps in this phase.</p>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>

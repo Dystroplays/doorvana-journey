@@ -53,4 +53,12 @@ export default defineSchema({
     isSmall: v.boolean(),
     displayOrder: v.number(),
   }).index("by_segment", ["segmentId"]),
+
+  notes: defineTable({
+    content: v.string(),
+    createdBy: v.string(),
+    assignedTo: v.string(),
+    seenAt: v.optional(v.number()),
+    resolvedAt: v.optional(v.number()),
+  }).index("by_resolved", ["resolvedAt"]),
 });
