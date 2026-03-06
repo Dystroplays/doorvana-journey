@@ -9,6 +9,7 @@
  */
 
 import type * as decisions from "../decisions.js";
+import type * as notes from "../notes.js";
 import type * as phases from "../phases.js";
 import type * as requirements from "../requirements.js";
 import type * as seed from "../seed.js";
@@ -23,6 +24,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   decisions: typeof decisions;
+  notes: typeof notes;
   phases: typeof phases;
   requirements: typeof requirements;
   seed: typeof seed;
