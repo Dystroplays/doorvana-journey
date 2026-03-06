@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useState, useMemo, useEffect } from 'react';
@@ -13,6 +13,14 @@ import Select from '@/components/ui/Select';
 import { Id } from '@/convex/_generated/dataModel';
 
 export default function PhasesPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
+      <PhasesPageContent />
+    </Suspense>
+  );
+}
+
+function PhasesPageContent() {
   const searchParams = useSearchParams();
   const segments = useQuery(api.segments.getAllWithRelations);
   const createPhase = useMutation(api.phases.create);
